@@ -47,6 +47,7 @@ function Login({ showModal }) {
                 <Button type="primary" htmlType="submit">
                     Login
                 </Button>
+                <span style={{ marginLeft: 30 }} />
                 <Button type="link" onClick={showModal}>
                     Don't have an account? Register
                 </Button>
