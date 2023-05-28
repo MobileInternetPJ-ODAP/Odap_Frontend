@@ -25,17 +25,18 @@ const LoginPage = () => {
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <Card style={{ width: 400 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '500px', marginBottom: '20px' }} />
+            <Card style={{ width: 500 }}>
                 <h2>Login</h2>
                 <LoginForm onLogin={handleLogin} showModal={showModal} />
             </Card>
             <Modal title="Register" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null}>
                 <RegisterForm />
             </Modal>
-
         </div>
     );
+
 };
 
 export default LoginPage;
