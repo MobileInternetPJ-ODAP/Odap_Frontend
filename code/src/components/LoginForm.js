@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';
 
-function Login() {
+function Login({ showModal }) {
     const [form] = Form.useForm();
     const navigate = useNavigate();
 
@@ -46,6 +46,9 @@ function Login() {
             <Form.Item>
                 <Button type="primary" htmlType="submit">
                     Login
+                </Button>
+                <Button type="link" onClick={showModal}>
+                    Don't have an account? Register
                 </Button>
             </Form.Item>
         </Form>
