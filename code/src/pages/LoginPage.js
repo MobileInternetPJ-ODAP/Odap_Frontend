@@ -9,7 +9,7 @@ const LoginPage = () => {
     const [isModalVisible, setIsModalVisible] = React.useState(false);
 
     const handleLogin = (userData) => {
-        navigate('/success', { state: { userData } });
+        navigate('/index', { state: { userData } });
     };
 
     const showModal = () => {

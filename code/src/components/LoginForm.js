@@ -1,26 +1,38 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';
+import cookie from 'react-cookies'
 
 function Login({ showModal }) {
     const [form] = Form.useForm();
     const navigate = useNavigate();
 
+    useEffect(() => {
+
+        if (document.cookie !== '') {
+          // 如果cookie不为空，则导航到/success界面
+          navigate('/index');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
+
     const onFinish = values => {
-        axios.post('http://localhost:8080/api/user/login', values)
-            .then(response => {
-                const { code, error_msg } = response.data;
-                if (code === 200) {
-                    navigate('/success', { state: { userData: values } });
-                } else {
-                    message.error(error_msg);
-                }
-            })
-            .catch(err => {
-                console.log(err);
-                message.error('Login Failed');
-            });
+        axios.post('http://localhost:8080/api/user/login', values, { withCredentials: true })
+        .then(response => {
+            const { code, error_msg, } = response.data;
+
+            if (code === 200) {
+                cookie.save('user',values.username,{path:"/"});
+                navigate('/index');
+            } else {
+                message.error(error_msg);
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            message.error('Login Failed');
+        });
     };
 
     return (
