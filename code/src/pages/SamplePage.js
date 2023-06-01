@@ -1,31 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Pagination, Layout,Button,Space,message } from 'antd';
+import { Table, Pagination, Layout, Button, Space, message, Card } from 'antd';
 import axios from 'axios';
 import { DeleteOutlined } from '@ant-design/icons';
 import MenuComponent from '../components/MenuList';
-import { useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-
-  
 const SamplePage = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const datasetId = searchParams.get('dataset_id');
-    
+
   const [datasets, setDatasets] = useState([]);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-
 
   const navigate = useNavigate();
 
   const handleNameClick = (record) => {
     const datasetId = record.datasetId;
     const sampleId = record.id;
-    navigate(`/manage/sample/tag/?dataset_id=${datasetId}&sample_id=${sampleId}`);
+    const sampleName = record.name;
+    navigate(`/manage/sample/tag/?dataset_id=${datasetId}&sample_id=${sampleId}&sample_name=${sampleName}`);
   };
+
+  const handleGoBack = () => {
+    navigate('/manage');
+  };
+
 
   useEffect(() => {
     fetchData();
@@ -78,24 +80,23 @@ const SamplePage = () => {
   };
 
   const handleDelete = async (id) => {
-//     try {
-//       const response = await axios.delete(`http://localhost:8080/api/dataset/${id}`, {
-//       headers: {
-//         'Content-Type': undefined, // 或者删除该行
-//       },
-// });
-//       const { code } = response.data;
-//       if (code === 200) {
-//         message.success('删除成功', 1, fetchData);
-//       } else {
-//         message.error('删除失败');
-//       }
-//     } catch (error) {
-//       console.error(error);
-//     }
-      message.error('您不是管理员', 1);
+    // try {
+    //   const response = await axios.delete(`http://localhost:8080/api/dataset/${id}`, {
+    //     headers: {
+    //       'Content-Type': undefined, // 或者删除该行
+    //     },
+    //   });
+    //   const { code } = response.data;
+    //   if (code === 200) {
+    //     message.success('删除成功', 1, fetchData);
+    //   } else {
+    //     message.error('删除失败');
+    //   }
+    // } catch (error) {
+    //   console.error(error);
+    // }
+    message.error('您不是管理员', 1);
   };
-
 
   const columns = [
     {
@@ -103,8 +104,8 @@ const SamplePage = () => {
       dataIndex: 'name',
       key: 'name',
       render: (text, record) => (
-        // eslint-disable-next-line
-        <a onClick={() => handleNameClick(record)}>{text}</a>
+          // eslint-disable-next-line
+          <a onClick={() => handleNameClick(record)}>{text}</a>
       ),
     },
 
@@ -112,37 +113,44 @@ const SamplePage = () => {
       key: 'actions',
       width: 80,
       render: (text, record) => (
-        <Space>
-          <Button
-            type="danger"
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-          />
-        </Space>
+          <Space>
+            <Button
+                type="danger"
+                icon={<DeleteOutlined />}
+                onClick={() => handleDelete(record.id)}
+            />
+          </Space>
       ),
     },
   ];
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <MenuComponent />
-      <Layout>
-        <div>
-          <h1 style={{ textAlign: 'center' }}>Sample List</h1>
-          <Table dataSource={datasets} columns={columns} pagination={false} />
-
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={total}
-            onChange={handlePaginationChange}
-            showSizeChanger={false} // 不显示每页记录数量选择器
-            showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`} // 自定义显示总记录数量文本
-            style={{ textAlign: 'center' }} // 居中显示
-          />
+      <Layout style={{ minHeight: '100vh' }}>
+        <MenuComponent />
+        <Layout>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Button type="primary" onClick={handleGoBack} style={{ margin: '10px' }}>
+            Go Back
+          </Button>
+          <h1 style={{ textAlign: 'center', flex: 1 }}>Sample List</h1>
         </div>
+            <Card>
+              <Table dataSource={datasets} columns={columns} pagination={false} />
+              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={total}
+                    onChange={handlePaginationChange}
+                    showSizeChanger={false}
+                    showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
+                />
+              </div>
+            </Card>
+          </div>
+        </Layout>
       </Layout>
-    </Layout>
   );
 };
 

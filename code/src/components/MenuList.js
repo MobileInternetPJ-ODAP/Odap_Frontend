@@ -19,7 +19,7 @@ const MenuComponent = () => {
   };
 
   return (
-    <Sider>
+    <Sider width={170}>
       <div className="logo" />
       <Menu theme="dark" mode="inline" selectedKeys={[location.pathname]}>
         <Menu.Item key="/index" icon={<UserOutlined />}>

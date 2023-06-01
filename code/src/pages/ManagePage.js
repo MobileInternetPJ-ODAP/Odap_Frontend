@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Pagination, Layout, Button, message, Space } from 'antd';
+import { Table, Pagination, Layout, Button, message, Space ,Card} from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import MenuComponent from '../components/MenuList';
@@ -64,11 +64,7 @@ const ManagePage = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:8080/api/dataset/${id}`, {
-      headers: {
-        'Content-Type': undefined, // 或者删除该行
-      },
-});
+      const response = await axios.get(`http://localhost:8080/api/del_dataset/${id}`, { withCredentials: true });
       const { code } = response.data;
       if (code === 200) {
         message.success('删除成功', 1, fetchData);
@@ -121,6 +117,7 @@ const ManagePage = () => {
       <Layout>
         <div>
           <h1 style={{ textAlign: 'center' }}>Dataset List</h1>
+          <Card>
           <Table dataSource={datasets} columns={columns} pagination={false} />
 
           <Pagination
@@ -132,6 +129,7 @@ const ManagePage = () => {
             showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
             style={{ textAlign: 'center' }}
           />
+          </Card>
         </div>
       </Layout>
     </Layout>

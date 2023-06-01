@@ -1,146 +1,258 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Pagination, Layout,Button,Space,message } from 'antd';
+import React, { useEffect, useState, useRef } from 'react';
+import { Layout, Button, Input, Card, message } from 'antd';
 import axios from 'axios';
-import { DeleteOutlined } from '@ant-design/icons';
 import MenuComponent from '../components/MenuList';
-import { useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-
-  
 const TagPage = () => {
+  const cardRef = useRef();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const datasetId = searchParams.get('dataset_id');
   const sampleId = searchParams.get('sample_id');
-    
-  const [datasets, setDatasets] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const sampleName = searchParams.get('sample_name');
 
+  let wx = 0;
+  let wy = 0;
 
   const navigate = useNavigate();
+  const [imageUrl, setImageUrl] = useState('');
+  const [tagList, setTagList] = useState([]);
+  const [mouseDown, setMouseDown] = useState(false);
+  const [rectangleStart, setRectangleStart] = useState({ x: 0, y: 0 });
+  const [rectangleEnd, setRectangleEnd] = useState({ x: 0, y: 0 });
+  const [inputTag, setInputTag] = useState(false);
+  const [imageElement, setImageElement] = useState(null);
 
-  const handleNameClick = (record) => {
-    const datasetId = record.datasetId;
-    const sampleId = record.id;
-    navigate(`/manage/sample/tag/?dataset_id=${datasetId}&sample_id=${sampleId}`);
+  const handleGoBack = () => {
+    navigate(`/manage/sample/?dataset_id=${datasetId}`);
   };
 
   useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line
-  }, [currentPage]);
-
-  const fetchData = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/api/samples', {
-        params: {
-          page_num: currentPage,
-          page_size: pageSize,
-          dataset_id: datasetId,
-        },
-      });
-
-      if (response.data.code === 200) {
-        const { data } = response.data;
-        setDatasets(data);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/sample_data`, {
+          responseType: 'blob',
+          params: {
+            sample_id: sampleId,
+            dataset_id: datasetId,
+          },
+        });
+        const blob = response.data;
+        const imageUrl = URL.createObjectURL(blob);
+        setImageUrl(imageUrl);
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+    };
+
+    wx = document.getElementById('left-card').offsetWidth;
+    wy = document.getElementById('left-card').offsetHeight;
+
+    fetchData();
+    fetchTagList();
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setMouseDown(false);
+        setInputTag(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [sampleId, datasetId]);
+
+  const fetchTagList = async () => {
+    const response = await axios.get(`http://localhost:8080/api/tags`, {
+      params: {
+        sample_id: sampleId,
+        dataset_id: datasetId,
+      },
+    });
+    if (response.data.code === 200) {
+      response.data.data.forEach((tag) => {
+        tag.begin_pos = JSON.parse(tag.begin_pos);
+        tag.end_pos = JSON.parse(tag.end_pos);
+      });
+      setTagList(response.data.data);
     }
   };
 
-  const fetchTotalCount = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/api/count_samples/', {
-        params: {
-          dataset_id: datasetId,
-        },
-      });
-      if (response.data.code === 200) {
-        const { data } = response.data;
-        setTotal(data);
-      }
-    } catch (error) {
-      console.error(error);
-    }
+  const handleMouseUp = async () => {
+    setMouseDown(false);
+    setInputTag(true);
   };
 
-  useEffect(() => {
-    fetchTotalCount();
-    // eslint-disable-next-line
-  }, []);
-
-  const handlePaginationChange = (page) => {
-    setCurrentPage(page);
-    fetchData();
+  const handleTagSubmit = async (tag) => {
+    setInputTag(false);
+    const response = await axios.post(
+      `http://localhost:8080/api/tag/`,
+      {
+        dataset_id: datasetId,
+        sample_id: sampleId,
+        begin_pos: JSON.stringify([rectangleStart.x, rectangleStart.y]),
+        end_pos: JSON.stringify([rectangleEnd.x, rectangleEnd.y]),
+        tag,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    if (response.data.code === 200) {
+      fetchTagList();
+    }
   };
 
   const handleDelete = async (id) => {
-//     try {
-//       const response = await axios.delete(`http://localhost:8080/api/dataset/${id}`, {
-//       headers: {
-//         'Content-Type': undefined, // 或者删除该行
-//       },
-// });
-//       const { code } = response.data;
-//       if (code === 200) {
-//         message.success('删除成功', 1, fetchData);
-//       } else {
-//         message.error('删除失败');
-//       }
-//     } catch (error) {
-//       console.error(error);
-//     }
-      message.error('您不是管理员', 1);
+    try {
+      const response = await axios.get(`http://localhost:8080/api/del_tag/${id}`, { withCredentials: true });
+      const { code } = response.data;
+      if (code === 200) {
+        message.success('删除成功', 1, fetchTagList);
+      } else {
+        message.error('删除失败');
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-
-  const columns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text, record) => (
-        // eslint-disable-next-line
-        <a onClick={() => handleNameClick(record)}>{text}</a>
-      ),
-    },
-
-    {
-      key: 'actions',
-      width: 80,
-      render: (text, record) => (
-        <Space>
-          <Button
-            type="danger"
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-          />
-        </Space>
-      ),
-    },
-  ];
-
   return (
+    
     <Layout style={{ minHeight: '100vh' }}>
       <MenuComponent />
       <Layout>
-        <div>
-          <h1 style={{ textAlign: 'center' }}>Sample List</h1>
-          <Table dataSource={datasets} columns={columns} pagination={false} />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Button type="primary" onClick={handleGoBack} style={{ margin: '10px' }}>
+            Go Back
+          </Button>
+          <h1 style={{ textAlign: 'center', flex: 1 }}>{sampleName}</h1>
+        </div>
+        <div style={{ display: 'flex', alignItems:'stretch', flex: '1' }}>
+          <div style={{ flex: '1', display: 'flex', justifyContent: 'center' }}>
+            <Card
+              id="left-card"
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '1000px',
+                height: '700px',
+                position: 'relative',
+              }}
+            >
+              <img
+                draggable="false"
+                ref={setImageElement}
+                src={imageUrl}
+                onMouseDown={(e) => {
+                  setMouseDown(true);
+                  const rect = e.target.getBoundingClientRect();
+                  const scaleX = e.target.width / rect.width;
+                  const scaleY = e.target.height / rect.height;
+                  setRectangleStart({
+                    x: (e.clientX - rect.left) * scaleX + 248,
+                    y: (e.clientY - rect.top) * scaleY + 98,
+                  });
+                  setRectangleEnd({
+                    x: (e.clientX - rect.left) * scaleX + 248,
+                    y: (e.clientY - rect.top) * scaleY + 98,
+                  });
+                }}
+                onMouseMove={(e) => {
+                  if (mouseDown) {
+                    const rect = e.target.getBoundingClientRect();
+                    const scaleX = e.target.width / rect.width;
+                    const scaleY = e.target.height / rect.height;
+                    setRectangleEnd({
+                      x: (e.clientX - rect.left) * scaleX + 248,
+                      y: (e.clientY - rect.top) * scaleY + 98,
+                    });
+                  }
+                }}
+                onMouseUp={handleMouseUp}
+                style={{
+                  cursor: 'crosshair',
+                  width: '500px',
+                  objectFit: 'cover',
+                  position: 'relative',
+                }}
+              />
+              {mouseDown && (
+                <div
+                  style={{
+                    border: '1px solid red',
+                    position: 'absolute',
+                    left: rectangleStart.x,
+                    top: rectangleStart.y,
+                    width: rectangleEnd.x - rectangleStart.x,
+                    height: rectangleEnd.y - rectangleStart.y,
+                  }}
+                />
+              )}
+              {inputTag && (
+                <Input
+                  autoFocus
+                  onBlur={(e) => handleTagSubmit(e.target.value)}
+                  onPressEnter={(e) => handleTagSubmit(e.target.value)}
+                  style={{ position: 'absolute', left: rectangleEnd.x, top: rectangleEnd.y, width: '200px' }}
+                />
+              )}
+              {tagList.map((tagItem, index) => (
+                <div
+                
+                  key={index}
+                  style={{
+                    border: '1px solid red',
+                    position: 'absolute',
+                    left: tagItem.begin_pos[0],
+                    top: tagItem.begin_pos[1],
+                    width: tagItem.end_pos[0] - tagItem.begin_pos[0],
+                    height: tagItem.end_pos[1] - tagItem.begin_pos[1],
+                  }}
+                >
 
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={total}
-            onChange={handlePaginationChange}
-            showSizeChanger={false} // 不显示每页记录数量选择器
-            showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`} // 自定义显示总记录数量文本
-            style={{ textAlign: 'center' }} // 居中显示
-          />
+                  {/* {index + 1} */}
+                  <Button
+  type="link"
+  danger
+  style={{
+    backgroundColor: '#ff0000',
+    color: '#ffffff',
+    padding: '2px 4px', // 调整按钮的内边距
+    fontSize: '5px', // 调整按钮的字体大小
+  }}
+  onClick={() => handleDelete(tagItem.tag_id)}
+>
+  {index + 1}. DEL
+</Button>
+                </div>
+              ))}
+            </Card>
+          </div>
+          <div style={{ flex: '1', padding: '0px', maxWidth: '400px', overflow: 'auto' }}>
+            <Card
+  id="right-card"
+  style={{
+    height: '100%',
+    overflow: 'auto',
+    minHeight: '700px',
+    fontFamily: 'Arial, sans-serif',
+    fontWeight: 'bold',
+    fontSize: '20px',
+  }}
+>
+  {tagList.map((tagItem, index) => (
+    <div key={index}>
+      <div>{`${index + 1}. ${tagItem.tag}`}</div>
+    </div>
+  ))}
+</Card>
+          </div>
         </div>
       </Layout>
     </Layout>
