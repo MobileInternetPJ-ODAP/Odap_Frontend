@@ -15,7 +15,8 @@ const ManagePage = () => {
 
   const handleNameClick = (record) => {
     const datasetId = record._id;
-    navigate(`/manage/sample/?dataset_id=${datasetId}`);
+    const sampleType = record.sample_type;
+    navigate(`/manage/sample/?dataset_id=${datasetId}&sample_type=${sampleType}`);
   };
 
   useEffect(() => {

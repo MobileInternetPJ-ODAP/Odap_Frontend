@@ -6,6 +6,9 @@ import UploadPage from "./pages/UploadPage";
 import ManagePage from './pages/ManagePage';
 import SamplePage from './pages/SamplePage';
 import TagPage from './pages/TagPage';
+import TextTagPage from './pages/TextTagPage';
+import AudioTagPage from './pages/AudioTagPage';
+import UserManagePage from './pages/UserManagePage';
 
 
 function App() {
@@ -20,6 +23,9 @@ function App() {
         <Route path="/manage" element={<ManagePage/>} />
         <Route path="/manage/sample" element={<SamplePage />} />
         <Route path="/manage/sample/tag" element={<TagPage />} />
+        <Route path="/manage/sample/tagtext" element={<TextTagPage />} />
+        <Route path="/manage/sample/tagaudio" element={<AudioTagPage />} />
+        <Route path="/user_manage" element={<UserManagePage/>} />
       </Routes>
     </Router>
   );

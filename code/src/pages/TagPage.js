@@ -11,6 +11,7 @@ const TagPage = () => {
   const datasetId = searchParams.get('dataset_id');
   const sampleId = searchParams.get('sample_id');
   const sampleName = searchParams.get('sample_name');
+  const sampleType = searchParams.get('sample_type');
 
   let wx = 0;
   let wy = 0;
@@ -25,7 +26,7 @@ const TagPage = () => {
   const [imageElement, setImageElement] = useState(null);
 
   const handleGoBack = () => {
-    navigate(`/manage/sample/?dataset_id=${datasetId}`);
+    navigate(`/manage/sample/?dataset_id=${datasetId}&sample_type=${sampleType}`);
   };
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const TagPage = () => {
           params: {
             sample_id: sampleId,
             dataset_id: datasetId,
+            sample_type: sampleType,
           },
         });
         const blob = response.data;

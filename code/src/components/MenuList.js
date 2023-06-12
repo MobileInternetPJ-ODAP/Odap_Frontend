@@ -31,8 +31,8 @@ const MenuComponent = () => {
         <Menu.Item key="/manage" icon={<FolderOutlined />}>
           <Link to="/manage">管理数据集</Link>
         </Menu.Item>
-        <Menu.Item key="/annotate" icon={<TagOutlined />}>
-          <Link to="/annotate">标注数据</Link>
+        <Menu.Item key="/user_manage" icon={<FolderOutlined />}>
+          <Link to="/user_manage">用户管理</Link>
         </Menu.Item>
       </Menu>
       <Button

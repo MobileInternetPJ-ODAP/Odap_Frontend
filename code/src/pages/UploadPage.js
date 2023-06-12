@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Upload, Card, Layout, message } from 'antd';
+import { Form, Select, Input, Button, Upload, Card, Layout, message } from 'antd';
 import MenuComponent from '../components/MenuList';
 
 function FileUploadForm() {
@@ -17,7 +17,7 @@ function FileUploadForm() {
       formData.append('tag_type', values.tagType);
       formData.append('sample_type', values.sampleType);
       formData.append('desc', values.desc);
-
+      console.log(formData)
       fetch('http://localhost:8080/api/dataset', {
         method: 'POST',
         body: formData,
@@ -69,7 +69,11 @@ function FileUploadForm() {
                 <Input />
               </Form.Item>
               <Form.Item label="样本类型" name="sampleType">
-                <Input />
+                <Select>
+                  <Select.Option value="文本">文本</Select.Option>
+                  <Select.Option value="语音">语音</Select.Option>
+                  <Select.Option value="图片">图片</Select.Option>
+                </Select>
               </Form.Item>
               <Form.Item label="描述" name="desc">
                 <Input />
